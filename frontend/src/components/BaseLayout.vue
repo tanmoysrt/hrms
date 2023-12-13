@@ -23,27 +23,27 @@
 								{{ pushNotificationState.value === 1 ? "Push Activated" : "Push Enable" }}
 							</Button>
 							<router-link
-									:to="{ name: 'Notifications' }"
-									v-slot="{ navigate }"
-									class="flex flex-col items-center"
+								:to="{ name: 'Notifications' }"
+								v-slot="{ navigate }"
+								class="flex flex-col items-center"
 							>
 								<span class="relative inline-block" @click="navigate">
-									<FeatherIcon name="bell" class="h-6 w-6"/>
+									<FeatherIcon name="bell" class="h-6 w-6" />
 									<span
-											v-if="unreadNotificationsCount.data"
-											class="absolute top-0 right-0.5 inline-block w-2 h-2 bg-red-600 rounded-full border border-white"
+										v-if="unreadNotificationsCount.data"
+										class="absolute top-0 right-0.5 inline-block w-2 h-2 bg-red-600 rounded-full border border-white"
 									>
 									</span>
 								</span>
 							</router-link>
 							<router-link
-									:to="{ name: 'Profile' }"
-									class="flex flex-col items-center"
+								:to="{ name: 'Profile' }"
+								class="flex flex-col items-center"
 							>
 								<Avatar
-										:image="user.data.user_image"
-										:label="user.data.first_name"
-										size="xl"
+									:image="user.data.user_image"
+									:label="user.data.first_name"
+									size="xl"
 								/>
 							</router-link>
 						</div>
