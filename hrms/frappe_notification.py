@@ -1,5 +1,6 @@
 import requests
 import frappe
+from frappe.utils.response import Response
 
 class FrappeNotification:
     CENTRAL_SERVER_ENDPOINT = "http://notification.relay:8000"
@@ -12,17 +13,8 @@ class FrappeNotification:
         raise NotImplementedError
 
     @staticmethod
-    def set_site_name(site_name: str) -> None:
-        FrappeNotification.SITE_NAME = site_name
-
-    @staticmethod
     def set_project(project_name: str) -> None:
         FrappeNotification.PROJECT_NAME = project_name
-
-    @staticmethod
-    def set_credential(api_key: str, api_secret: str) -> None:
-        FrappeNotification.API_KEY = api_key
-        FrappeNotification.API_SECRET = api_secret
 
     # Add Token (User)
     @staticmethod
@@ -122,10 +114,10 @@ class FrappeNotification:
     @staticmethod
     def _send_post_request(route: str, params: dict) -> (bool, dict):
         try:
+            FrappeNotification.fetch_credentials_from_notification_relay_server()
             headers = {
                 "Authorization": f"token {FrappeNotification.API_KEY}:{FrappeNotification.API_SECRET}"
             }
-            print(headers)
             body = FrappeNotification._inject_static_info(params)
             response = requests.post(FrappeNotification._create_route(route), params=params, json=body, headers=headers)
             if response.status_code == 200:
@@ -154,3 +146,54 @@ class FrappeNotification:
         query["project_name"] = FrappeNotification.PROJECT_NAME
         query["site_name"] = FrappeNotification.SITE_NAME
         return query
+
+    @staticmethod
+    def fetch_credentials_from_notification_relay_server():
+        if FrappeNotification.API_KEY != "" and FrappeNotification.API_SECRET != "":
+            return
+        # TODO try to fetch credentials from site_config.json
+        # Generate new credentials
+        current_site =  frappe.local.site
+        # fetch current port from site_config.json
+        current_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("webserver_port", 80)
+        FrappeNotification.SITE_NAME = f"{current_site}:{current_port}"
+        route = "/api/method/notification_relay.api.auth.get_credential"
+        token = frappe.generate_hash(length=48)
+        # store the token in the redis cache
+        frappe.cache().set(f"{current_site}:notification_auth_tmp_token", token, ex=600)
+        body = {
+            "endpoint": FrappeNotification.SITE_NAME,
+            "token": token,
+            "webhook_route": "/api/method/hrms.frappe_notification.webhook"
+        }
+        response = requests.post(FrappeNotification._create_route(route), json=body)
+        if response.status_code == 200:
+            responseJson = response.json()
+            success = responseJson["message"]["success"]
+            message = responseJson["message"]["message"]
+            if not success:
+                raise Exception(message)
+            credentials = responseJson["message"]["credentials"]
+            api_key = credentials["api_key"]
+            api_secret = credentials["api_secret"]
+            # Set the credentials
+            FrappeNotification.API_KEY = api_key
+            FrappeNotification.API_SECRET = api_secret
+            # TODO: store the credentials in site_config.json
+        else:
+            raise Exception(response.text)
+@frappe.whitelist(allow_guest=True, methods=['GET'])
+def webhook():
+    # check if token found in redis cache
+    token = frappe.cache().get(f"{frappe.local.site}:notification_auth_tmp_token")
+    response = Response()
+    response.mimetype = "text/plain; charset=UTF-8"
+
+    if token is None or token == "":
+        response.data = ""
+        response.status_code = 401
+        return response
+
+    response.data = token
+    response.status_code = 200
+    return response
