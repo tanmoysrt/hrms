@@ -98,6 +98,8 @@ class FrappeNotification {
             localStorage.setItem('firebase_token', new_token);
         }
 
+        this.token = new_token;
+
         return {
             permission_granted: true,
             token: new_token
