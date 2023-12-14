@@ -3,7 +3,7 @@
  */
 
 class FrappeNotification {
-    static relayServerBaseURL = 'http://notification.relay:8000';
+    static relayServerBaseURL = 'https://push-notification-relay.frappe.cloud';
 
     // Constructor
     constructor(project_name, app_name) {
