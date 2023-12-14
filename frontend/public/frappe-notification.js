@@ -107,9 +107,6 @@ class FrappeNotification {
     }
 
     async disableNotification() {
-        if (this.messaging == null) {
-            throw new Error("Notification service not initialized");
-        }
         if (this.token == null) {
             this.token = localStorage.getItem('firebase_token');
             if (this.token == null || this.token === "") {
