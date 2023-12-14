@@ -104,6 +104,40 @@ class FrappeNotification {
         };
     }
 
+    async disableNotification() {
+        // Return if token already presence in the instance
+        if (this.token == null) {
+            return;
+        }
+        if (this.messaging == null) {
+            throw new Error("Notification service not initialized");
+        }
+        // delete old token
+        try {
+            await this.messaging.deleteToken();
+        } catch (e) {
+            console.log("Failed to delete token from firebase");
+        }
+        // unsubscribe old token
+        // TODO: url will be same when it will merge in framework
+        try {
+            await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + this.token, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        } catch {
+            console.log("Failed to unsubscribe from push notification");
+        }
+        // remove token from local storage
+        localStorage.removeItem('firebase_token');
+        // reset state
+        this.token = null;
+        this.messaging = null;
+        this.initialized = false;
+    }
+
     // Add Listener
     onMessage(callback) {
         this.onMessageHandler = callback;
