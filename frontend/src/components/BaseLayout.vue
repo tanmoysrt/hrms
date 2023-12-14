@@ -98,8 +98,7 @@ function subscribeToNotifications() {
 				let permission_granted = data.permission_granted;
 				let token = data.token;
 				if (permission_granted) {
-					alert("Permission Granted");
-					alert("Token: " + token);
+					alert("Notification Activated")
 					pushNotificationState.value = 1;
 				} else {
 					alert("Permission Denied ! Retry again later");
