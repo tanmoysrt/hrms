@@ -155,11 +155,11 @@ class FrappeNotification:
         # Generate new credentials
         current_site =  frappe.local.site
         # fetch current port from site_config.json
-        current_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("webserver_port", -1)
-        if current_port == -1:
-            FrappeNotification.SITE_NAME = current_site
+        is_use_webserver_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("notification_use_webserver_port", 0)
+        if is_use_webserver_port == 1 or is_use_webserver_port == "1":
+            FrappeNotification.SITE_NAME = f"{current_site}:{frappe.get_conf(FrappeNotification.SITE_NAME).get('webserver_port', 8000)}"
         else:
-            FrappeNotification.SITE_NAME = f"{current_site}:{current_port}"
+            FrappeNotification.SITE_NAME = current_site
         route = "/api/method/notification_relay.api.auth.get_credential"
         token = frappe.generate_hash(length=48)
         # store the token in the redis cache
