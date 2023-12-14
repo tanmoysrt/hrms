@@ -3,7 +3,7 @@ import frappe
 from frappe.utils.response import Response
 
 class FrappeNotification:
-    CENTRAL_SERVER_ENDPOINT = "http://notification.relay:8000"
+    CENTRAL_SERVER_ENDPOINT = "https://push-notification-relay.frappe.cloud"
     PROJECT_NAME = ""
     SITE_NAME = ""
     API_KEY = ""
@@ -155,8 +155,11 @@ class FrappeNotification:
         # Generate new credentials
         current_site =  frappe.local.site
         # fetch current port from site_config.json
-        current_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("webserver_port", 80)
-        FrappeNotification.SITE_NAME = f"{current_site}:{current_port}"
+        current_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("webserver_port", -1)
+        if current_port == -1:
+            FrappeNotification.SITE_NAME = current_site
+        else:
+            FrappeNotification.SITE_NAME = f"{current_site}:{current_port}"
         route = "/api/method/notification_relay.api.auth.get_credential"
         token = frappe.generate_hash(length=48)
         # store the token in the redis cache
