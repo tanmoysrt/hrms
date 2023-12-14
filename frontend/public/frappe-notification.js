@@ -136,8 +136,6 @@ class FrappeNotification {
         localStorage.removeItem('firebase_token');
         // reset state
         this.token = null;
-        this.messaging = null;
-        this.initialized = false;
     }
 
     // Add Listener
