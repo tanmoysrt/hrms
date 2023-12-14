@@ -14,13 +14,13 @@
 							        theme="gray"
 							        size="sm"
 							        label="Button"
-							        :loading="pushNotificationState.value === 2"
+							        :loading="pushNotificationState === 2"
 							        :loadingText="Activating"
-							        :disabled="pushNotificationState.value === 2"
+							        :disabled="pushNotificationState === 2"
 							        :link="null"
 							        @click="subscribeToNotifications"
 							>
-								{{ pushNotificationState.value === 1 ? "Push Activated" : "Push Enable" }}
+								{{ pushNotificationState === 1 ? "Push Activated" : "Push Enable" }}
 							</Button>
 							<router-link
 								:to="{ name: 'Notifications' }"
