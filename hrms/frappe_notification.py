@@ -153,7 +153,7 @@ class FrappeNotification:
             return
         # TODO change the method later,as doctype currently part of hrms app
         credential = frappe.get_single("Relay Server Credential")
-        if credential.api_key != "" and credential.api_secret != "":
+        if credential.api_key != "" and credential.api_secret != "" and credential.api_key is not None and credential.api_secret is not None:
             FrappeNotification.API_KEY = credential.api_key
             FrappeNotification.API_SECRET = credential.api_secret
             return
