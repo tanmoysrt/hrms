@@ -151,7 +151,7 @@ class FrappeNotification:
     @staticmethod
     def fetch_credentials_from_notification_relay_server():
         # Set the site name if not set
-        if FrappeNotification.SITE_NAME != "":
+        if FrappeNotification.SITE_NAME == "":
             site_uri = urlparse(frappe.utils.get_url())
             current_site = site_uri.hostname
             FrappeNotification.SITE_NAME = current_site
