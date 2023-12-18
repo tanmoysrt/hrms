@@ -191,6 +191,7 @@ class FrappeNotification:
             credential.api_key = api_key
             credential.api_secret = api_secret
             credential.save(ignore_permissions=True)
+            frappe.db.commit()
         else:
             raise Exception(response.text)
 @frappe.whitelist(allow_guest=True, methods=['GET'])
