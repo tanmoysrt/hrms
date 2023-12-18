@@ -178,10 +178,8 @@
 		/>
 
         <!-- Import Frappe Notification JS -->
-        <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
-        <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-messaging.min.js"></script>
-        <script type="application/javascript" src="/assets/hrms/frontend/frappe-notification.js"></script>
-        <script>
+        <script type="module">
+            import FrappeNotification from "./public/frappe-notification";
             window.frappeNotification = new FrappeNotification("hrms", "hrms-dashboard");
             window.frappeNotification.initialize().then(() => {
                 console.log("Frappe Notification Initialized");

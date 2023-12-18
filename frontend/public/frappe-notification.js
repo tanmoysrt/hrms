@@ -1,6 +1,8 @@
 /**
  * Will be moved to framework
  */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getMessaging, getToken, onMessage, isSupported, deleteToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 class FrappeNotification {
     static relayServerBaseURL = 'https://push-notification-relay.frappe.cloud';
@@ -9,8 +11,10 @@ class FrappeNotification {
     constructor(project_name, app_name) {
         this.project_name = project_name;
         this.app_name = app_name;
+        this.app = null;
         this.token = null;
         this.messaging = null;
+        this.serviceWorkerRegistration = null;
         this.initialized = false;
         this.onMessageHandler = null;
     }
@@ -29,13 +33,16 @@ class FrappeNotification {
         const serviceWorkerURL = `/assets/hrms/frontend/frappe-notification-sw.js?config=${encodeConfig}`;
         // register service worker
         if ("serviceWorker" in navigator) {
-            const registration = await navigator.serviceWorker.register(serviceWorkerURL);
+            const registration = await navigator.serviceWorker.register(serviceWorkerURL, {
+                type: "module",
+            });
             console.log("SW registered:", registration);
+            this.serviceWorkerRegistration = registration;
             // initialize firebase
-            firebase.initializeApp(config);
+            const firebaseApp = initializeApp(config);
+            this.app = firebaseApp;
             // // initialize messaging
-            this.messaging = firebase.messaging();
-            this.messaging.useServiceWorker(registration);
+            this.messaging = getMessaging(firebaseApp);
             if(this.onMessageHandler) {
                 this.onMessage(this.onMessageHandler);
             }
@@ -45,6 +52,10 @@ class FrappeNotification {
 
     // Enable notification
     async enableNotification() {
+        if(!await isSupported()) {
+            alert("Your browser does not support push notification");
+            return;
+        }
         // Return if token already presence in the instance
         if (this.token != null) {
             return {
@@ -61,7 +72,9 @@ class FrappeNotification {
         let new_token = "";
         try {
             // request permission and get token
-            new_token = await this.messaging.getToken();
+            new_token = await getToken(this.messaging, {
+                serviceWorkerRegistration: this.serviceWorkerRegistration,
+            })
         } catch {
             // permission denied
             return {
@@ -74,9 +87,8 @@ class FrappeNotification {
         // send token to server
         if (token_changed) {
             // unsubscribe old token
-            // TODO: url will be same when it will merge in framework
             if (old_token) {
-                await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + new_token, {
+                await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + old_token, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -108,15 +120,15 @@ class FrappeNotification {
 
     async disableNotification() {
         if (this.token == null) {
+            // try to fetch token from local storage
             this.token = localStorage.getItem('firebase_token');
             if (this.token == null || this.token === "") {
                 return;
             }
-            return;
         }
         // delete old token
         try {
-            await this.messaging.deleteToken();
+            await deleteToken(this.messaging)
         } catch (e) {
             console.log("Failed to delete token from firebase");
         }
@@ -144,6 +156,8 @@ class FrappeNotification {
         if (this.messaging == null) {
             return;
         }
-        this.messaging.onMessage(callback);
+        onMessage(this.messaging, this.onMessageHandler)
     }
 }
+
+export default FrappeNotification
