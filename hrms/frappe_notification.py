@@ -150,6 +150,12 @@ class FrappeNotification:
 
     @staticmethod
     def fetch_credentials_from_notification_relay_server():
+        # Set the site name if not set
+        if FrappeNotification.SITE_NAME != "":
+            site_uri = urlparse(frappe.utils.get_url())
+            current_site = site_uri.hostname
+            FrappeNotification.SITE_NAME = current_site
+        # Check if credentials already set
         if FrappeNotification.API_KEY != "" and FrappeNotification.API_SECRET != "":
             return
         # TODO change the method later,as doctype currently part of hrms app
@@ -164,12 +170,7 @@ class FrappeNotification:
         port = ''
         if site_uri.port is not None:
             port = str(site_uri.port)
-        # fetch current port from site_config.json
-        is_use_webserver_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("notification_use_webserver_port", 0)
-        if is_use_webserver_port == 1 or is_use_webserver_port == "1":
-            FrappeNotification.SITE_NAME = f"{current_site}:{frappe.get_conf(FrappeNotification.SITE_NAME).get('webserver_port', 8000)}"
-        else:
-            FrappeNotification.SITE_NAME = current_site
+        FrappeNotification.SITE_NAME = current_site
         route = "/api/method/notification_relay.api.auth.get_credential"
         token = frappe.generate_hash(length=48)
         # store the token in the redis cache
