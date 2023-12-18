@@ -151,7 +151,12 @@ class FrappeNotification:
     def fetch_credentials_from_notification_relay_server():
         if FrappeNotification.API_KEY != "" and FrappeNotification.API_SECRET != "":
             return
-        # TODO try to fetch credentials from site_config.json
+        # TODO change the method later,as doctype currently part of hrms app
+        credential = frappe.get_single("Relay Server Credential")
+        if credential.api_key != "" and credential.api_secret != "":
+            FrappeNotification.API_KEY = credential.api_key
+            FrappeNotification.API_SECRET = credential.api_secret
+            return
         # Generate new credentials
         current_site =  frappe.local.site
         # fetch current port from site_config.json
@@ -182,7 +187,10 @@ class FrappeNotification:
             # Set the credentials
             FrappeNotification.API_KEY = api_key
             FrappeNotification.API_SECRET = api_secret
-            # TODO: store the credentials in site_config.json
+            # TODO: store the credentials in doctype (just for testing)
+            credential.api_key = api_key
+            credential.api_secret = api_secret
+            credential.save(ignore_permissions=True)
         else:
             raise Exception(response.text)
 @frappe.whitelist(allow_guest=True, methods=['GET'])
