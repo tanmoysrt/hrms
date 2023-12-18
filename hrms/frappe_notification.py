@@ -1,6 +1,7 @@
 import requests
 import frappe
 from frappe.utils.response import Response
+from urllib.parse import urlparse
 
 class FrappeNotification:
     CENTRAL_SERVER_ENDPOINT = "https://push-notification-relay.frappe.cloud"
@@ -158,7 +159,11 @@ class FrappeNotification:
             FrappeNotification.API_SECRET = credential.api_secret
             return
         # Generate new credentials
-        current_site =  frappe.local.site
+        site_uri = urlparse(frappe.utils.get_url())
+        current_site =  site_uri.hostname
+        port = ''
+        if site_uri.port is not None:
+            port = str(site_uri.port)
         # fetch current port from site_config.json
         is_use_webserver_port = frappe.get_conf(FrappeNotification.SITE_NAME).get("notification_use_webserver_port", 0)
         if is_use_webserver_port == 1 or is_use_webserver_port == "1":
@@ -171,6 +176,8 @@ class FrappeNotification:
         frappe.cache().set(f"{current_site}:notification_auth_tmp_token", token, ex=600)
         body = {
             "endpoint": FrappeNotification.SITE_NAME,
+            "protocol": site_uri.scheme,
+            "port": port,
             "token": token,
             "webhook_route": "/api/method/hrms.frappe_notification.webhook"
         }
