@@ -16,6 +16,7 @@ class FrappeNotification {
         this.messaging = null;
         this.serviceWorkerRegistration = null;
         this.initialized = false;
+        this.vapid_public_key = "";
         this.onMessageHandler = null;
     }
 
@@ -27,13 +28,16 @@ class FrappeNotification {
         // fetch web config
         let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.project_name}&app_name=${this.app_name}`
         let response = await fetch(url);
-        let config = await response.json();
+        let response_json = await response.json();
+        let config = response_json.config;
+        // set vapid public key
+        this.vapid_public_key = response_json.vapid_public_key;
         // encode config to pass to service worker
-        const encodeConfig = encodeURIComponent(JSON.stringify(config));
-        const serviceWorkerURL = `/assets/hrms/frontend/frappe-notification-sw.js?config=${encodeConfig}`;
+        const encode_config = encodeURIComponent(JSON.stringify(config));
+        const service_worker_URL = `/assets/hrms/frontend/frappe-notification-sw.js?config=${encode_config}`;
         // register service worker
         if ("serviceWorker" in navigator) {
-            const registration = await navigator.serviceWorker.register(serviceWorkerURL, {
+            const registration = await navigator.serviceWorker.register(service_worker_URL, {
                 type: "module",
             });
             console.log("SW registered:", registration);
@@ -66,6 +70,15 @@ class FrappeNotification {
         if (this.messaging == null) {
             throw new Error("Notification service not initialized");
         }
+        // ask for permission
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+            return {
+                permission_granted: false,
+                token: "",
+            };
+        }
+
         // check in local storage for old token
         let old_token = localStorage.getItem('firebase_token');
         // new token
@@ -73,6 +86,7 @@ class FrappeNotification {
         try {
             // request permission and get token
             new_token = await getToken(this.messaging, {
+                vapidKey: this.vapid_public_key,
                 serviceWorkerRegistration: this.serviceWorkerRegistration,
             })
         } catch {
