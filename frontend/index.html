@@ -180,7 +180,6 @@
         <!-- Import Frappe Notification JS -->
         <script type="module">
             import FrappeNotification from "./public/frappe-notification";
-			FrappeNotification.relayServerBaseURL = "http://notification.relay:8000"
             window.frappeNotification = new FrappeNotification("hrms", "hrms-dashboard");
             window.frappeNotification.initialize().then(() => {
                 console.log("Frappe Notification Initialized");
