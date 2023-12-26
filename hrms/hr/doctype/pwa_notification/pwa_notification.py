@@ -22,7 +22,7 @@ class PWANotification(Document):
 				self.to_user,
 				self.reference_document_type,
 				self.message,
-				link=link
+				link="https://"+link
 			)
 		except Exception as e:
 			print("Error sending notification: " + str(e))
