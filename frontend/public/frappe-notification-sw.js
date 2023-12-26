@@ -10,14 +10,14 @@ onBackgroundMessage(messaging, (payload) => {
     const notificationTitle = payload.data.title;
     const notificationOptions = {
         body: payload.data.body || '',
-        data: { url:payload.data.click_action },
-        actions: [{action: "open_url", title: "Open Notification"}]
+        data: { url:payload.data.click_action }
     };
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 self.addEventListener('notificationclick', (event)=>{
   event.notification.close();
-  // Open the url you set on notification.data
-  clients.openWindow(event.notification.data.url)
+  if(!event.notification.data.url){
+        clients.openWindow(event.notification.data.url)
+  };
 })
