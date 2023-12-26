@@ -88,11 +88,14 @@ class FrappeNotification:
 
     # Send notification (User)
     @staticmethod
-    def send_notification_to_user(user_id: str, title: str, content: str) -> bool:
+    def send_notification_to_user(user_id: str, title: str, content: str, link:str=None, data:dict={}) -> bool:
+        if link is not None and link != "":
+            data["click_action"] = link
         res = FrappeNotification._send_post_request("/api/method/notification_relay.api.send_notification.user", {
             "user_id": user_id,
             "title": title,
-            "content": content
+            "content": content,
+            "data": data
         })
         if res[0]:
             return res[1]["success"]
@@ -101,11 +104,14 @@ class FrappeNotification:
 
     # Send notification (Topic)
     @staticmethod
-    def send_notification_to_topic(topic_name: str, title: str, content: str) -> bool:
+    def send_notification_to_topic(topic_name: str, title: str, content: str, link:str=None, data:dict={}) -> bool:
+        if link is not None and link != "":
+            data["click_action"] = link
         res = FrappeNotification._send_post_request("/api/method/notification_relay.api.send_notification.topic", {
             "topic_name": topic_name,
             "title": title,
-            "content": content
+            "content": content,
+            "data": data
         })
         if res[0]:
             return res[1]["success"]
