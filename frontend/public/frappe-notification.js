@@ -43,11 +43,15 @@ class FrappeNotification {
 		const service_worker_URL = `/assets/hrms/frontend/frappe-notification-sw.js?config=${encode_config}`;
 		// register service worker
 		if ("serviceWorker" in navigator) {
+			// wait for document to ready
+			while (document.readyState !== 'complete'){
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
 			// check if service worker is already registered
 			const registrations = await navigator.serviceWorker.getRegistrations();
 			for (let i = 0; i < registrations.length; i++) {
 				let registration = registrations[i];
-				if (registration.active.scriptURL && registration.active.scriptURL.includes(service_worker_URL)) {
+				if (registration.active && registration.active.scriptURL && registration.active.scriptURL.includes(service_worker_URL)) {
 					console.log("SW already registered:", registration);
 					this.serviceWorkerRegistration = registration;
 					// activate service worker
