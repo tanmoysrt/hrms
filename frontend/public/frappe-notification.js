@@ -45,10 +45,9 @@ class FrappeNotification {
 		if ("serviceWorker" in navigator) {
 			// check if service worker is already registered
 			const registrations = await navigator.serviceWorker.getRegistrations();
-			for(let i=0; i<registrations.length; i++) {
+			for (let i = 0; i < registrations.length; i++) {
 				let registration = registrations[i];
-				console.log(registration);
-				if (registration.active.scriptURL.includes(service_worker_URL)) {
+				if (registration.active.scriptURL && registration.active.scriptURL.includes(service_worker_URL)) {
 					console.log("SW already registered:", registration);
 					this.serviceWorkerRegistration = registration;
 					// activate service worker
