@@ -5,13 +5,14 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-
 import {
 	getMessaging,
 	getToken,
-	onMessage,
+	onMessage as onFCMMessage,
 	isSupported,
 	deleteToken
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 class FrappeNotification {
 	static relayServerBaseURL = 'https://push-notification-relay.frappe.cloud';
+	static serviceWorkerFilename = 'frappe-notification-sw.js';
 
 	// Constructor
 	constructor(project_name, app_name) {
@@ -24,59 +25,45 @@ class FrappeNotification {
 		this.initialized = false;
 		this.vapid_public_key = "";
 		this.onMessageHandler = null;
+		this.webConfig = null;
 	}
 
-	// Setup notification service
-	async initialize() {
-		if (this.initialized) {
-			return;
+	// Get service worker URL
+	async getServiceWorkerURL() {
+		let config = await this.fetchWebConfig();
+		// encode config to pass to service worker
+		const encode_config = encodeURIComponent(JSON.stringify(config));
+		return `/assets/hrms/frontend/${FrappeNotification.serviceWorkerFilename}?config=${encode_config}`;
+	}
+
+	// Fetch web config from relay server
+	async fetchWebConfig() {
+		if (this.webConfig !== null && this.webConfig !== undefined) {
+			return this.webConfig;
 		}
-		// fetch web config
 		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.project_name}&app_name=${this.app_name}`
 		let response = await fetch(url);
 		let response_json = await response.json();
 		let config = response_json.config;
-		// set vapid public key
-		this.vapid_public_key = response_json.vapid_public_key;
-		// encode config to pass to service worker
-		const encode_config = encodeURIComponent(JSON.stringify(config));
-		const service_worker_URL = `/assets/hrms/frontend/frappe-notification-sw.js?config=${encode_config}`;
-		// register service worker
-		if ("serviceWorker" in navigator) {
-			// wait for document to ready
-			while (document.readyState !== 'complete'){
-				await new Promise(resolve => setTimeout(resolve, 100));
-			}
-			// check if service worker is already registered
-			const registrations = await navigator.serviceWorker.getRegistrations();
-			for (let i = 0; i < registrations.length; i++) {
-				let registration = registrations[i];
-				if (registration.active && registration.active.scriptURL && registration.active.scriptURL.includes(service_worker_URL)) {
-					console.log("SW already registered:", registration);
-					this.serviceWorkerRegistration = registration;
-					// activate service worker
-					await registration.update();
-					break;
-				}
-			}
-			if (this.serviceWorkerRegistration == null) {
-				const registration = await navigator.serviceWorker.register(service_worker_URL, {
-					type: "module",
-				});
-				console.log("SW registered:", registration);
-				this.serviceWorkerRegistration = registration;
-			} else {
-				console.log("SW already registered:", this.serviceWorkerRegistration);
-			}
+		this.webConfig = config;
+		return config;
+	}
 
-			// initialize firebase
-			const firebaseApp = initializeApp(config);
-			this.app = firebaseApp;
-			// // initialize messaging
-			this.messaging = getMessaging(firebaseApp);
-			if (this.onMessageHandler) {
-				this.onMessage(this.onMessageHandler);
-			}
+
+	// Setup notification service
+	async initialize(serviceWorkerRegistration) {
+		if (this.initialized) {
+			return;
+		}
+		this.serviceWorkerRegistration = serviceWorkerRegistration;
+		// initialize firebase
+		const config = await this.fetchWebConfig();
+		const firebaseApp = initializeApp(config);
+		this.app = firebaseApp;
+		// // initialize messaging
+		this.messaging = getMessaging(firebaseApp);
+		if (this.onMessageHandler) {
+			this.onMessage(this.onMessageHandler);
 		}
 		this.initialized = true;
 	}
@@ -197,7 +184,7 @@ class FrappeNotification {
 		if (this.messaging == null) {
 			return;
 		}
-		onMessage(this.messaging, this.onMessageHandler)
+		onFCMMessage(this.messaging, this.onMessageHandler)
 	}
 }
 

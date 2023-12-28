@@ -35,7 +35,7 @@ if(isChrome()) {
 	self.addEventListener('notificationclick', (event) => {
 		event.stopImmediatePropagation();
 		event.notification.close();
-		if (event.notification.data.url) {
+		if (event.notification.data && event.notification.data.url) {
 			clients.openWindow(event.notification.data.url)
 		}
 	})
