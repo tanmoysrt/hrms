@@ -632,7 +632,7 @@ def subscribe_push_notification(fcm_token: str):
 	current_user = frappe.session.user
 	data = frappe.db.get_value("User", current_user, ["name"], as_dict=True)
 	username = data.name
-	success, message = FrappeNotification.add_token(username, fcm_token)
+	success, message = FrappeNotification().add_token(username, fcm_token)
 	return {
 		"success": success,
 		"message": message
@@ -643,7 +643,7 @@ def unsubscribe_push_notification(fcm_token: str):
 	current_user = frappe.session.user
 	data = frappe.db.get_value("User", current_user, ["name"], as_dict=True)
 	username = data.name
-	success, message = FrappeNotification.remove_token(username, fcm_token)
+	success, message = FrappeNotification().remove_token(username, fcm_token)
 	return {
 		"success": success,
 		"message": message

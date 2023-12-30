@@ -18,7 +18,7 @@ class PWANotification(Document):
 		)
 		try:
 			link = urlparse(frappe.utils.get_url()).hostname
-			FrappeNotification.send_notification_to_user(
+			FrappeNotification().send_notification_to_user(
 				self.to_user,
 				self.reference_document_type,
 				self.message,
