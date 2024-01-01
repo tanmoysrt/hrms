@@ -1,6 +1,3 @@
-/**
- * Will be moved to framework
- */
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
 	getMessaging,
@@ -10,69 +7,172 @@ import {
 	deleteToken
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
+
 class FrappeNotification {
 	static relayServerBaseURL = 'https://push-notification-relay.frappe.cloud';
-	static serviceWorkerFilename = 'frappe-notification-sw.js';
 
-	// Constructor
-	constructor(project_name, app_name) {
-		this.project_name = project_name;
-		this.app_name = app_name;
-		this.app = null;
-		this.token = null;
-		this.messaging = null;
-		this.serviceWorkerRegistration = null;
-		this.initialized = false;
-		this.vapid_public_key = "";
-		this.onMessageHandler = null;
+	// Type definitions
+	/**
+	 * Register Token Handler
+	 *
+	 * @typedef {function(string)} registerTokenHandlerType
+	 * @param {string} token - FCM token returned by {@link enableNotification} method
+	 * @returns {promise<boolean>}
+	 */
+
+	/**
+	 * Unregister Token Handler
+	 *
+	 * @typedef {function(string)} unregisterTokenHandlerType
+	 * @param {string} token - FCM token returned by `enableNotification` method
+	 * @returns {promise<boolean>}
+	 */
+
+	/**
+	 * Web Config
+	 * FCM web config to initialize firebase app
+	 *
+	 * @typedef {object} webConfigType
+	 * @property {string} projectId
+	 * @property {string} appId
+	 * @property {string} apiKey
+	 * @property {string} authDomain
+	 * @property {string} messagingSenderId
+	 */
+
+	/**
+	 * Constructor
+	 *
+	 * @param {string} projectName
+	 * @param {string} appName
+	 * @param {registerTokenHandlerType} registerTokenHandler
+	 * @param {unregisterTokenHandlerType} unregisterTokenHandler
+	 */
+	constructor(projectName, appName, registerTokenHandler, unregisterTokenHandler) {
+		// client info
+		this.projectName = projectName;
+		this.appName = appName;
+		/** @type {webConfigType | null}  */
 		this.webConfig = null;
+		this.vapidPublicKey = "";
+		this.token = null;
+
+		// state
+		this.initialized = false;
+		this.messaging = null;
+		/** @type {ServiceWorkerRegistration | null} */
+		this.serviceWorkerRegistration = null;
+
+		// event handlers
+		this.onMessageHandler = null;
+		/** @type {registerTokenHandlerType} */
+		this.registerTokenHandler = registerTokenHandler;
+		/** @type {unregisterTokenHandlerType} */
+		this.unregisterTokenHandler = unregisterTokenHandler;
 	}
 
-	// Get service worker URL
-	async getServiceWorkerURL() {
-		let config = await this.fetchWebConfig();
-		// encode config to pass to service worker
-		const encode_config = encodeURIComponent(JSON.stringify(config));
-		return `/assets/hrms/frontend/${FrappeNotification.serviceWorkerFilename}?config=${encode_config}`;
-	}
-
-	// Fetch web config from relay server
-	async fetchWebConfig() {
-		if (this.webConfig !== null && this.webConfig !== undefined) {
-			return this.webConfig;
-		}
-		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.project_name}&app_name=${this.app_name}`
-		let response = await fetch(url);
-		let response_json = await response.json();
-		let config = response_json.config;
-		this.webConfig = config;
-		return config;
-	}
-
-
-	// Setup notification service
+	/**
+	 * Initialize notification service client
+	 *
+	 * @param {ServiceWorkerRegistration} serviceWorkerRegistration - Service worker registration object
+	 * @returns {Promise<void>}
+	 */
 	async initialize(serviceWorkerRegistration) {
 		if (this.initialized) {
 			return;
 		}
 		this.serviceWorkerRegistration = serviceWorkerRegistration;
-		// initialize firebase
 		const config = await this.fetchWebConfig();
-		const firebaseApp = initializeApp(config);
-		this.app = firebaseApp;
-		// // initialize messaging
-		this.messaging = getMessaging(firebaseApp);
-		if (this.onMessageHandler) {
-			this.onMessage(this.onMessageHandler);
-		}
+		this.messaging = getMessaging(initializeApp(config));
+		this.onMessage(this.onMessageHandler);
 		this.initialized = true;
 	}
 
-	// Enable notification
+	/**
+	 * Append config to service worker URL
+	 *
+	 * @param {string} url - Service worker URL
+	 * @param {string} parameter_name - Parameter name to add config
+	 * @returns {Promise<string>} - Service worker URL with config
+	 */
+	async appendConfigToServiceWorkerURL(url, parameter_name = "config") {
+		let config = await this.fetchWebConfig();
+		const encode_config = encodeURIComponent(JSON.stringify(config));
+		return `${url}?${parameter_name}=${encode_config}`;
+	}
+
+	/**
+	 * Fetch web config of the project
+	 *
+	 * @returns {Promise<webConfigType>}
+	 */
+	async fetchWebConfig() {
+		if (this.webConfig !== null && this.webConfig !== undefined) {
+			return this.webConfig;
+		}
+		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}&app_name=${this.appName}`
+		let response = await fetch(url);
+		let response_json = await response.json();
+		this.webConfig = response_json.config;
+		return this.webConfig;
+	}
+
+
+	/**
+	 * Fetch VAPID public key
+	 *
+	 * @returns {Promise<string>}
+	 */
+	async fetchVapidPublicKey() {
+		if (this.vapidPublicKey !== "") {
+			return this.vapidPublicKey;
+		}
+		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}&app_name=${this.appName}`
+		let response = await fetch(url);
+		let response_json = await response.json();
+		this.vapidPublicKey = response_json.vapid_public_key;
+		return this.vapidPublicKey;
+	}
+
+
+	/**
+	 * Register on message handler
+	 *
+	 * @param {function(
+	 *  {
+	 *    data:{
+	 *       title: string,
+	 *       body: string,
+	 *       click_action: string|null,
+	 *    }
+	 *  }
+	 * )} callback - Callback function to handle message
+	 */
+	onMessage(callback) {
+		if (callback == null) return;
+		this.onMessageHandler = callback;
+		if (this.messaging == null) return;
+		onFCMMessage(this.messaging, this.onMessageHandler)
+	}
+
+	/**
+	 * Check if notification is enabled
+	 *
+	 * @returns {boolean}
+	 */
+	isNotificationEnabled() {
+		return localStorage.getItem('firebase_token') !== null;
+	}
+
+	/**
+	 * Enable notification
+	 * This will return notification permission status and token
+	 *
+	 * @returns {Promise<{permission_granted: boolean, token: string}>}
+	 */
 	async enableNotification() {
 		if (!await isSupported()) {
-			alert("Your browser does not support push notification");
-			return;
+			throw new Error("Push notification not supported");
 		}
 		// Return if token already presence in the instance
 		if (this.token != null) {
@@ -80,9 +180,6 @@ class FrappeNotification {
 				permission_granted: true,
 				token: this.token,
 			};
-		}
-		if (this.messaging == null) {
-			throw new Error("Notification service not initialized");
 		}
 		// ask for permission
 		const permission = await Notification.requestPermission();
@@ -92,60 +189,39 @@ class FrappeNotification {
 				token: "",
 			};
 		}
-
 		// check in local storage for old token
-		let old_token = localStorage.getItem('firebase_token');
-		// new token
-		let new_token = "";
-		try {
-			// request permission and get token
-			new_token = await getToken(this.messaging, {
-				vapidKey: this.vapid_public_key,
-				serviceWorkerRegistration: this.serviceWorkerRegistration,
-			})
-		} catch {
-			// permission denied
-			return {
-				permission_granted: false,
-				token: ""
-			};
-		}
-		// check if token is changed
-		let token_changed = old_token !== new_token;
-		// send token to server
-		if (token_changed) {
+		let oldToken = localStorage.getItem('firebase_token');
+		let newToken = await getToken(this.messaging, {
+			vapidKey: await this.fetchVapidPublicKey(),
+			serviceWorkerRegistration: this.serviceWorkerRegistration,
+		})
+		// register new token if token is changed
+		if (oldToken !== newToken) {
 			// unsubscribe old token
-			if (old_token) {
-				await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + old_token, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					}
-				});
+			if (oldToken) {
+				await this.unregisterTokenHandler(oldToken);
 			}
 			// subscribe push notification and register token
-			// TODO: url will be same when it will merge in framework
-			let response = await fetch("/api/method/hrms.api.subscribe_push_notification?fcm_token=" + new_token, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-				}
-			});
-			if (response.status !== 200) {
+			let isSubscriptionSuccessful = await this.registerTokenHandler(newToken);
+			if (isSubscriptionSuccessful === false) {
 				throw new Error("Failed to subscribe to push notification");
 			}
 			// save token to local storage
-			localStorage.setItem('firebase_token', new_token);
+			localStorage.setItem('firebase_token', newToken);
 		}
-
-		this.token = new_token;
-
+		this.token = newToken;
 		return {
 			permission_granted: true,
-			token: new_token
+			token: newToken
 		};
 	}
 
+	/**
+	 * Disable notification
+	 * This will delete token from firebase and unsubscribe from push notification
+	 *
+	 * @returns {Promise<void>}
+	 */
 	async disableNotification() {
 		if (this.token == null) {
 			// try to fetch token from local storage
@@ -154,37 +230,22 @@ class FrappeNotification {
 				return;
 			}
 		}
-		// delete old token
+		// delete old token from firebase
 		try {
 			await deleteToken(this.messaging)
 		} catch (e) {
-			console.log("Failed to delete token from firebase");
+			console.error("Failed to delete token from firebase");
+			console.error(e);
 		}
-		// unsubscribe old token
-		// TODO: url will be same when it will merge in framework
 		try {
-			await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + this.token, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-				}
-			});
+			await this.unregisterTokenHandler(this.token);
 		} catch {
-			console.log("Failed to unsubscribe from push notification");
+			console.error("Failed to unsubscribe from push notification");
+			console.error(e);
 		}
-		// remove token from local storage
+		// remove token
 		localStorage.removeItem('firebase_token');
-		// reset state
 		this.token = null;
-	}
-
-	// Add Listener
-	onMessage(callback) {
-		this.onMessageHandler = callback;
-		if (this.messaging == null) {
-			return;
-		}
-		onFCMMessage(this.messaging, this.onMessageHandler)
 	}
 }
 

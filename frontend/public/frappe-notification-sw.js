@@ -4,11 +4,9 @@ import {getMessaging, onBackgroundMessage} from "https://www.gstatic.com/firebas
 const jsonConfig = new URL(location).searchParams.get('config');
 const firebaseApp = initializeApp(JSON.parse(jsonConfig));
 const messaging = getMessaging(firebaseApp);
-
 function isChrome() {
 	return navigator.userAgent.toLowerCase().includes("chrome")
 }
-
 onBackgroundMessage(messaging, (payload) => {
 	console.log('[firebase-messaging-sw.js] Received background message ', payload);
 	const notificationTitle = payload.data.title;
