@@ -183,7 +183,7 @@
 
 		const registerTokenHandler = async (token) => {
 			try {
-				let response = await fetch("/api/method/hrms.api.subscribe_push_notification?fcm_token=" + token, {
+				let response = await fetch("/api/method/hrms.frappe_notification.subscribe?fcm_token=" + token, {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -199,7 +199,7 @@
 
 		const unregisterTokenHandler = async (token) => {
 			try {
-				let response = await fetch("/api/method/hrms.api.unsubscribe_push_notification?fcm_token=" + token, {
+				let response = await fetch("/api/method/hrms.frappe_notification.unsubscribe?fcm_token=" + token, {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
