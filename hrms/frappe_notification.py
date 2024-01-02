@@ -37,14 +37,11 @@ class FrappeNotification:
         :param token: (str) The token to be added.
         :return: tuple[bool, str] First element is the success status, second element is the message.
         """
-        isSuccessful, data = self._send_post_request("notification_relay.api.token.add", {
+        data = self._send_post_request("notification_relay.api.token.add", {
             "user_id": user_id,
             "fcm_token": token
         })
-        if isSuccessful:
-            return data["success"], data["message"]
-        else:
-            raise Exception(data)
+        return data["success"], data["message"]
 
     def remove_token(self, user_id: str, token: str) -> tuple[bool, str]:
         """
@@ -54,14 +51,11 @@ class FrappeNotification:
         :param token: (str) The token to be removed.
         :return: tuple[bool, str] First element is the success status, second element is the message.
         """
-        isSuccessful, data =  self._send_post_request("notification_relay.api.token.remove", {
+        data =  self._send_post_request("notification_relay.api.token.remove", {
             "user_id": user_id,
             "fcm_token": token
         })
-        if isSuccessful:
-            return data["success"], data["message"]
-        else:
-            raise Exception(data)
+        return data["success"], data["message"]
 
     def add_topic(self, topic_name: str) -> bool:
         """
@@ -70,13 +64,10 @@ class FrappeNotification:
         :param topic_name: (str) The name of the topic.
         :return: bool True if successful, False otherwise.
         """
-        isSuccessful, data =  self._send_post_request("notification_relay.api.topic.add", {
+        data =  self._send_post_request("notification_relay.api.topic.add", {
             "topic_name": topic_name
         })
-        if isSuccessful:
-            return data["success"]
-        else:
-            raise Exception(data["message"])
+        return data["success"]
 
     # Remove Topic
     def remove_topic(self, topic_name: str) -> bool:
@@ -86,13 +77,10 @@ class FrappeNotification:
         :param topic_name: (str) The name of the topic.
         :return: bool True if successful, False otherwise.
         """
-        isSuccessful, data =  self._send_post_request("notification_relay.api.topic.remove", {
+        data =  self._send_post_request("notification_relay.api.topic.remove", {
             "topic_name": topic_name
         })
-        if isSuccessful:
-            return data["success"]
-        else:
-            raise Exception(data)
+        return data["success"]
 
     def subscribe_topic(self, user_id: str, topic_name: str) -> bool:
         """
@@ -102,14 +90,11 @@ class FrappeNotification:
         :param topic_name: (str) The name of the topic. This topic should be already created.
         :return:
         """
-        isSuccessful, data =  self._send_post_request("notification_relay.api.topic.subscribe", {
+        data =  self._send_post_request("notification_relay.api.topic.subscribe", {
             "user_id": user_id,
             "topic_name": topic_name
         })
-        if isSuccessful:
-            return data["success"]
-        else:
-            raise Exception(data)
+        return data["success"]
 
     # Unsubscribe Topic (User)
     def unsubscribe_topic(self, user_id: str, topic_name: str) -> bool:
@@ -120,14 +105,11 @@ class FrappeNotification:
         :param topic_name: (str) The name of the topic. This topic should be already created.
         :return: bool True if successful, False otherwise.
         """
-        isSuccessful, data =  self._send_post_request("notification_relay.api.topic.unsubscribe", {
+        data =  self._send_post_request("notification_relay.api.topic.unsubscribe", {
             "user_id": user_id,
             "topic_name": topic_name
         })
-        if isSuccessful:
-            return data["success"]
-        else:
-            raise Exception(data)
+        return data["success"]
 
     def send_notification_to_user(self, user_id: str, title: str, content: str, link:str=None, data=None) -> bool:
         """
@@ -146,16 +128,13 @@ class FrappeNotification:
             data["click_action"] = link
         if len(content) > 1000:
             raise Exception("Content should be at max 1000 characters")
-        res = self._send_post_request("notification_relay.api.send_notification.user", {
+        response_data = self._send_post_request("notification_relay.api.send_notification.user", {
             "user_id": user_id,
             "title": title,
             "content": content,
             "data": json.dumps(data)
         })
-        if res[0]:
-            return res[1]["success"]
-        else:
-            raise Exception(res[1])
+        return response_data["success"]
 
     def send_notification_to_topic(self, topic_name: str, title: str, content: str, link:str=None, data=None) -> bool:
         """
@@ -172,17 +151,13 @@ class FrappeNotification:
             data = {}
         if link is not None and link != "":
             data["click_action"] = link
-        res = self._send_post_request("notification_relay.api.send_notification.topic", {
+        response_data = self._send_post_request("notification_relay.api.send_notification.topic", {
             "topic_name": topic_name,
             "title": title,
             "content": content,
             "data": json.dumps(data)
         })
-        if res[0]:
-            return res[1]["success"]
-        else:
-            raise Exception(res[1])
-
+        return response_data["success"]
 
     def _get_credential(self) -> tuple[str, str]:
         """
@@ -210,18 +185,15 @@ class FrappeNotification:
                 "token": token,
                 "webhook_route": "/api/method/hrms.frappe_notification.webhook" # TODO change this method later while integrating in framework
             }
-            isRequestSuccessful, response = self._send_post_request("notification_relay.api.auth.get_credential", body, False)
-            if isRequestSuccessful:
-                success = response["success"]
-                if not success:
-                    raise Exception(response["message"])
-                credential.api_key = response["credentials"]["api_key"]
-                credential.api_secret = response["credentials"]["api_secret"]
-                credential.save(ignore_permissions=True)
-                frappe.db.commit()
-                return credential.api_key, credential.api_secret
-            else:
-                raise Exception(response)
+            response = self._send_post_request("notification_relay.api.auth.get_credential", body, False)
+            success = response["success"]
+            if not success:
+                raise Exception(response["message"])
+            credential.api_key = response["credentials"]["api_key"]
+            credential.api_secret = response["credentials"]["api_secret"]
+            credential.save(ignore_permissions=True)
+            frappe.db.commit()
+            return credential.api_key, credential.api_secret
 
     def _send_post_request(self, method: str, params: dict, use_authentication: bool=True):
         """
@@ -234,17 +206,14 @@ class FrappeNotification:
         :param use_authentication: (bool) Whether to use authentication or not.
         :return: tuple[bool, dict] First element is the success status of request, second element is the response data.
         """
-        try:
-            client = FrappeClient(FrappeNotification.CENTRAL_SERVER_ENDPOINT)
-            if use_authentication:
-                api_key, api_secret = self._get_credential()
-                client.authenticate(api_key, api_secret)
-            params["project_name"] = FrappeNotification.PROJECT_NAME
-            params["site_name"] = self._get_site_name
-            response = client.post_api(method, params)
-            return True, response
-        except Exception as e:
-            return False, str(e)
+
+        client = FrappeClient(FrappeNotification.CENTRAL_SERVER_ENDPOINT)
+        if use_authentication:
+            api_key, api_secret = self._get_credential()
+            client.authenticate(api_key, api_secret)
+        params["project_name"] = FrappeNotification.PROJECT_NAME
+        params["site_name"] = self._get_site_name
+        return client.post_api(method, params)
 
     # Helper methods to fetch properties
     @property
@@ -279,3 +248,20 @@ def webhook():
     response.data = token
     response.status_code = 200
     return response
+
+# Subscribe and Unsubscribe API
+@frappe.whitelist(methods=["GET"])
+def subscribe(fcm_token: str):
+    success, message = FrappeNotification().add_token(frappe.session.user, fcm_token)
+    return {
+		"success": success,
+		"message": message
+	}
+
+@frappe.whitelist(methods=["GET"])
+def unsubscribe(fcm_token: str):
+    success, message = FrappeNotification().remove_token(frappe.session.user, fcm_token)
+    return {
+		"success": success,
+		"message": message
+	}
