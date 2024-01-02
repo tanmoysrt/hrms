@@ -625,26 +625,3 @@ def get_allowed_states_for_workflow(workflow: dict, user_id: str) -> list[str]:
 	return [
 		transition.state for transition in workflow.transitions if transition.allowed in user_roles
 	]
-
-# Notification
-@frappe.whitelist(methods=["GET"])
-def subscribe_push_notification(fcm_token: str):
-	current_user = frappe.session.user
-	data = frappe.db.get_value("User", current_user, ["name"], as_dict=True)
-	username = data.name
-	success, message = FrappeNotification().add_token(username, fcm_token)
-	return {
-		"success": success,
-		"message": message
-	}
-
-@frappe.whitelist(methods=["GET"])
-def unsubscribe_push_notification(fcm_token: str):
-	current_user = frappe.session.user
-	data = frappe.db.get_value("User", current_user, ["name"], as_dict=True)
-	username = data.name
-	success, message = FrappeNotification().remove_token(username, fcm_token)
-	return {
-		"success": success,
-		"message": message
-	}
