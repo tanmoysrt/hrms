@@ -111,7 +111,7 @@ class FrappeNotification:
         })
         return data["success"]
 
-    def send_notification_to_user(self, user_id: str, title: str, content: str, link:str=None, data=None) -> bool:
+    def send_notification_to_user(self, user_id: str, title: str, content: str, link:str=None, data=None, truncate_content:bool=False) -> bool:
         """
         Send notification to a user.
 
@@ -120,6 +120,7 @@ class FrappeNotification:
         :param content: (str) The body of the notification. At max 1000 characters.
         :param link: (str) The link to be opened when the notification is clicked.
         :param data: (dict) The data to be sent with the notification. This can be used to provide extra information while dealing with in-app notifications.
+        :param truncate_content: (bool) Whether to truncate the content or not. If True, the content will be truncated to 1000 characters.
         :return: bool True if the request queued successfully, False otherwise.
         """
         if data is None:
@@ -127,7 +128,10 @@ class FrappeNotification:
         if link is not None and link != "":
             data["click_action"] = link
         if len(content) > 1000:
-            raise Exception("Content should be at max 1000 characters")
+            if truncate_content:
+                content = content[:1000]
+            else:
+                raise Exception("Content should be at max 1000 characters")
         response_data = self._send_post_request("notification_relay.api.send_notification.user", {
             "user_id": user_id,
             "title": title,
@@ -136,7 +140,7 @@ class FrappeNotification:
         })
         return response_data["success"]
 
-    def send_notification_to_topic(self, topic_name: str, title: str, content: str, link:str=None, data=None) -> bool:
+    def send_notification_to_topic(self, topic_name: str, title: str, content: str, link:str=None, data=None, truncate_content:bool=False) -> bool:
         """
         Send notification to a notification topic.
 
@@ -145,12 +149,18 @@ class FrappeNotification:
         :param content: (str) The body of the notification. At max 1000 characters.
         :param link: (str) The link to be opened when the notification is clicked.
         :param data: (dict) The data to be sent with the notification. This can be used to provide extra information while dealing with in-app notifications.
+        :param truncate_content: (bool) Whether to truncate the content or not. If True, the content will be truncated to 1000 characters.
         :return:  bool True if the request queued successfully, False otherwise.
         """
         if data is None:
             data = {}
         if link is not None and link != "":
             data["click_action"] = link
+        if len(content) > 1000:
+            if truncate_content:
+                content = content[:1000]
+            else:
+                raise Exception("Content should be at max 1000 characters")
         response_data = self._send_post_request("notification_relay.api.send_notification.topic", {
             "topic_name": topic_name,
             "title": title,
