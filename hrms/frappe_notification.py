@@ -3,7 +3,7 @@ import json
 import frappe
 from frappe.utils.response import Response
 from urllib.parse import urlparse
-from frappeclient import FrappeClient
+from frappe.frappeclient import FrappeClient
 
 class FrappeNotification:
     CENTRAL_SERVER_ENDPOINT = "https://push-notification-relay.frappe.cloud"
@@ -207,10 +207,11 @@ class FrappeNotification:
         :return: tuple[bool, dict] First element is the success status of request, second element is the response data.
         """
 
-        client = FrappeClient(FrappeNotification.CENTRAL_SERVER_ENDPOINT)
         if use_authentication:
             api_key, api_secret = self._get_credential()
-            client.authenticate(api_key, api_secret)
+            client = FrappeClient(FrappeNotification.CENTRAL_SERVER_ENDPOINT, api_key=api_key, api_secret=api_secret)
+        else:
+            client = FrappeClient(FrappeNotification.CENTRAL_SERVER_ENDPOINT)
         params["project_name"] = FrappeNotification.PROJECT_NAME
         params["site_name"] = self._get_site_name
         return client.post_api(method, params)
