@@ -44,14 +44,12 @@ class FrappeNotification {
 	 * Constructor
 	 *
 	 * @param {string} projectName
-	 * @param {string} appName
 	 * @param {registerTokenHandlerType} registerTokenHandler
 	 * @param {unregisterTokenHandlerType} unregisterTokenHandler
 	 */
-	constructor(projectName, appName, registerTokenHandler, unregisterTokenHandler) {
+	constructor(projectName, registerTokenHandler, unregisterTokenHandler) {
 		// client info
 		this.projectName = projectName;
-		this.appName = appName;
 		/** @type {webConfigType | null}  */
 		this.webConfig = null;
 		this.vapidPublicKey = "";
@@ -110,7 +108,7 @@ class FrappeNotification {
 		if (this.webConfig !== null && this.webConfig !== undefined) {
 			return this.webConfig;
 		}
-		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}&app_name=${this.appName}`
+		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
 		let response = await fetch(url);
 		let response_json = await response.json();
 		this.webConfig = response_json.config;
@@ -127,7 +125,7 @@ class FrappeNotification {
 		if (this.vapidPublicKey !== "") {
 			return this.vapidPublicKey;
 		}
-		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}&app_name=${this.appName}`
+		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
 		let response = await fetch(url);
 		let response_json = await response.json();
 		this.vapidPublicKey = response_json.vapid_public_key;
