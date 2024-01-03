@@ -213,7 +213,7 @@
 			}
 		}
 
-		window.frappeNotification = new FrappeNotification("hrms", "hrms-dashboard", registerTokenHandler, unregisterTokenHandler);
+		window.frappeNotification = new FrappeNotification("hrms", "dashboard", registerTokenHandler, unregisterTokenHandler);
 		document.addEventListener("DOMContentLoaded", () => {
 			window.frappeNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
 				.then((url) => {
