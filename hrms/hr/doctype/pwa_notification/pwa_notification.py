@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 import frappe
 from frappe.model.document import Document
-from hrms.frappe_notification import FrappeNotification
+from frappe.push_notification import PushNotification
 
 class PWANotification(Document):
 	def on_update(self):
@@ -18,11 +18,14 @@ class PWANotification(Document):
 		)
 		try:
 			link = urlparse(frappe.utils.get_url()).hostname
-			FrappeNotification().send_notification_to_user(
-				self.to_user,
-				self.reference_document_type,
-				self.message,
-				link="https://"+link
-			)
+			push_notification = PushNotification()
+			if push_notification.is_enabled():
+				PushNotification().send_notification_to_user(
+					self.to_user,
+					self.reference_document_type,
+					self.message,
+					link="https://"+link,
+					truncate_body=True
+				)
 		except Exception as e:
 			print("Error sending notification: " + str(e))

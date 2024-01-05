@@ -1,5 +1,5 @@
 __version__ = "16.0.0-dev"
 
-from hrms.frappe_notification import FrappeNotification
+from frappe.push_notification import PushNotification
 
-FrappeNotification.set_project("hrms")
+PushNotification.set_project("hrms")

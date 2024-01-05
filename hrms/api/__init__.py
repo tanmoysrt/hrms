@@ -3,7 +3,6 @@ from frappe import _
 from frappe.model.workflow import get_workflow_name
 from frappe.query_builder import Order
 from frappe.utils import getdate
-from hrms.frappe_notification import FrappeNotification
 
 SUPPORTED_FIELD_TYPES = [
 	"Link",
