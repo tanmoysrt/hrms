@@ -184,7 +184,7 @@
 		const registerTokenHandler = async (token) => {
 			try {
 				let response = await fetch("/api/method/frappe.push_notification.subscribe?fcm_token=" + token, {
-					method: 'POST',
+					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
 					}
@@ -200,7 +200,7 @@
 		const unregisterTokenHandler = async (token) => {
 			try {
 				let response = await fetch("/api/method/frappe.push_notification.unsubscribe?fcm_token=" + token, {
-					method: 'POST',
+					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
 					}
