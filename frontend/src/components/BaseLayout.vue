@@ -1,5 +1,6 @@
 <template>
 	<ion-page>
+		<FrappeNotification />
 		<ion-header class="ion-no-border">
 			<div class="w-full sm:w-96">
 				<div class="flex flex-col bg-white shadow-sm p-4">

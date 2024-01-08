@@ -17,10 +17,10 @@ const notificationTitle = ref("");
 const notificationBody = ref("");
 
 onMounted(() => {
-	window.frappeNotification.onMessage((payload) => {
-		notificationTitle.value = payload.data.title;
-		notificationBody.value = payload.data.body;
-		dialog.value = true;
-	});
+		window.frappeNotification.onMessage((payload) => {
+			notificationTitle.value = payload.data.title;
+			notificationBody.value = payload.data.body;
+			dialog.value = true;
+		});
 });
 </script>
