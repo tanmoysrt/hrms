@@ -4,10 +4,14 @@ from urllib.parse import urlparse
 
 import frappe
 from frappe.model.document import Document
+
+import hrms
+
 from frappe.push_notification import PushNotification
 
 class PWANotification(Document):
 	def on_update(self):
+		hrms.refetch_resource("hrms:notifications", self.to_user)
 		self.publish_update()
 
 	def publish_update(self):

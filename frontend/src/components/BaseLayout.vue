@@ -53,7 +53,6 @@
 		</ion-header>
 
 		<ion-content class="ion-no-padding">
-			<FrappeNotification />
 			<div class="flex flex-col h-screen w-screen sm:w-96">
 				<slot name="body"></slot>
 			</div>
@@ -70,7 +69,6 @@ import { unreadNotificationsCount } from "@/data/notifications"
 import FrappeNotification from "@/components/FrappeNotification.vue";
 
 const user = inject("$user")
-const socket = inject("$socket")
 
 const props = defineProps({
 	pageTitle: {
