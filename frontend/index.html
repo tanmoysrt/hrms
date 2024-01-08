@@ -213,7 +213,6 @@
 			}
 		}
 
-		FrappeNotification.relayServerBaseURL = "http://notification.relay:8000"
 		window.frappeNotification = new FrappeNotification("hrms", registerTokenHandler, unregisterTokenHandler);
 		document.addEventListener("DOMContentLoaded", () => {
 			window.frappeNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
