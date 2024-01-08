@@ -79,9 +79,9 @@ const props = defineProps({
 })
 
 onMounted(() => {
-	socket.on("hrms:update_notifications", () => {
-		unreadNotificationsCount.reload()
-	})
+	// socket.on("hrms:update_notifications", () => {
+	// 	unreadNotificationsCount.reload()
+	// })
 })
 
 // Notification Enabling State
