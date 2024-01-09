@@ -13,22 +13,6 @@ class FrappeNotification {
 
 	// Type definitions
 	/**
-	 * Register Token Handler
-	 *
-	 * @typedef {function(string)} registerTokenHandlerType
-	 * @param {string} token - FCM token returned by {@link enableNotification} method
-	 * @returns {promise<boolean>}
-	 */
-
-	/**
-	 * Unregister Token Handler
-	 *
-	 * @typedef {function(string)} unregisterTokenHandlerType
-	 * @param {string} token - FCM token returned by `enableNotification` method
-	 * @returns {promise<boolean>}
-	 */
-
-	/**
 	 * Web Config
 	 * FCM web config to initialize firebase app
 	 *
@@ -44,10 +28,8 @@ class FrappeNotification {
 	 * Constructor
 	 *
 	 * @param {string} projectName
-	 * @param {registerTokenHandlerType} registerTokenHandler
-	 * @param {unregisterTokenHandlerType} unregisterTokenHandler
 	 */
-	constructor(projectName, registerTokenHandler, unregisterTokenHandler) {
+	constructor(projectName) {
 		// client info
 		this.projectName = projectName;
 		/** @type {webConfigType | null}  */
@@ -63,10 +45,6 @@ class FrappeNotification {
 
 		// event handlers
 		this.onMessageHandler = null;
-		/** @type {registerTokenHandlerType} */
-		this.registerTokenHandler = registerTokenHandler;
-		/** @type {unregisterTokenHandlerType} */
-		this.unregisterTokenHandler = unregisterTokenHandler;
 	}
 
 	/**
@@ -245,6 +223,50 @@ class FrappeNotification {
 		localStorage.removeItem('firebase_token');
 		this.token = null;
 	}
+
+	/**
+	 * Register Token Handler
+	 *
+	 * @param {string} token - FCM token returned by {@link enableNotification} method
+	 * @returns {promise<boolean>}
+	 */
+	async registerTokenHandler(token) {
+		try {
+			let response = await fetch("/api/method/frappe.push_notification.subscribe?fcm_token=" + token, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			});
+			return response.status === 200;
+		} catch (e) {
+			console.error(e)
+			return false
+		}
+	}
+
+	/**
+	 * Unregister Token Handler
+	 *
+	 * @param {string} token - FCM token returned by `enableNotification` method
+	 * @returns {promise<boolean>}
+	 */
+	async unregisterTokenHandler(token) {
+		try {
+			let response = await fetch("/api/method/frappe.push_notification.unsubscribe?fcm_token=" + token, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			});
+			return response.status === 200;
+
+		} catch (e) {
+			console.error(e)
+			return false
+		}
+	}
+
 }
 
 export default FrappeNotification

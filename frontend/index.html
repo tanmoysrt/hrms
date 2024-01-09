@@ -181,39 +181,7 @@
     <script type="module">
 		import FrappeNotification from "./public/frappe-notification";
 
-		const registerTokenHandler = async (token) => {
-			try {
-				let response = await fetch("/api/method/frappe.push_notification.subscribe?fcm_token=" + token, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					}
-				});
-				return response.status === 200;
-			} catch (e) {
-				console.log(e)
-				return false
-			}
-
-		}
-
-		const unregisterTokenHandler = async (token) => {
-			try {
-				let response = await fetch("/api/method/frappe.push_notification.unsubscribe?fcm_token=" + token, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					}
-				});
-				return response.status === 200;
-
-			} catch (e) {
-				console.log(e)
-				return false
-			}
-		}
-
-		window.frappeNotification = new FrappeNotification("hrms", registerTokenHandler, unregisterTokenHandler);
+		window.frappeNotification = new FrappeNotification("hrms");
 		document.addEventListener("DOMContentLoaded", () => {
 			window.frappeNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
 				.then((url) => {
