@@ -8,7 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 
-class FrappeNotification {
+class FrappePushNotification {
 	static relayServerBaseURL = 'https://push-notification-relay.frappe.cloud';
 
 	// Type definitions
@@ -86,7 +86,7 @@ class FrappeNotification {
 		if (this.webConfig !== null && this.webConfig !== undefined) {
 			return this.webConfig;
 		}
-		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
+		let url = `${FrappePushNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
 		let response = await fetch(url);
 		let response_json = await response.json();
 		this.webConfig = response_json.config;
@@ -103,7 +103,7 @@ class FrappeNotification {
 		if (this.vapidPublicKey !== "") {
 			return this.vapidPublicKey;
 		}
-		let url = `${FrappeNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
+		let url = `${FrappePushNotification.relayServerBaseURL}/api/method/notification_relay.api.get_config?project_name=${this.projectName}`
 		let response = await fetch(url);
 		let response_json = await response.json();
 		this.vapidPublicKey = response_json.vapid_public_key;
@@ -269,4 +269,4 @@ class FrappeNotification {
 
 }
 
-export default FrappeNotification
+export default FrappePushNotification

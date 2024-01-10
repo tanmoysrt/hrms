@@ -67,7 +67,6 @@ import { onMounted, ref, inject } from "vue"
 import { FeatherIcon, Avatar, Button } from "frappe-ui"
 
 import { unreadNotificationsCount } from "@/data/notifications"
-import FrappeNotification from "@/components/FrappeNotification.vue";
 
 const user = inject("$user")
 
@@ -91,7 +90,7 @@ const pushNotificationState = ref(0)
 // 0 - not enabled, 1- enabled, 2- loading
 function subscribeToNotifications() {
 	pushNotificationState.value = 2;
-	window.frappeNotification.enableNotification()
+	window.frappePushNotification.enableNotification()
 			.then((data) => {
 				console.log(data);
 				let permission_granted = data.permission_granted;

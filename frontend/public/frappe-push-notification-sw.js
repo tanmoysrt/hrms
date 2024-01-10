@@ -8,7 +8,6 @@ function isChrome() {
 	return navigator.userAgent.toLowerCase().includes("chrome")
 }
 onBackgroundMessage(messaging, (payload) => {
-	console.log('[firebase-messaging-sw.js] Received background message ', payload);
 	const notificationTitle = payload.data.title;
 	let notificationOptions = {
 		body: payload.data.body || ''

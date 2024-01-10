@@ -179,16 +179,16 @@
 
     <!-- Import Frappe Notification JS -->
     <script type="module">
-		import FrappeNotification from "./public/frappe-notification";
+		import FrappePushNotification from "./public/frappe-push-notification";
 
-		window.frappeNotification = new FrappeNotification("hrms");
+		window.frappePushNotification = new FrappePushNotification("hrms");
 		document.addEventListener("DOMContentLoaded", () => {
-			window.frappeNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
+			window.frappePushNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
 				.then((url) => {
 					navigator.serviceWorker.register(url, {
 						type: "module",
 					}).then((registration) => {
-						window.frappeNotification.initialize(registration).then(() => {
+						window.frappePushNotification.initialize(registration).then(() => {
 							console.log("Frappe Notification Initialized");
 						});
 					})

@@ -213,7 +213,7 @@ const getFieldInfo = (fieldname) => {
 
 const logout = async () => {
 	try {
-		await window.frappeNotification.disableNotification()
+		await window.frappePushNotification.disableNotification()
 		await session.logout.submit()
 	} catch (e) {
 		const msg = "An error occurred while attempting to log out!"
