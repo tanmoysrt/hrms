@@ -65,19 +65,6 @@ class FrappePushNotification {
 	}
 
 	/**
-	 * Append config to service worker URL
-	 *
-	 * @param {string} url - Service worker URL
-	 * @param {string} parameter_name - Parameter name to add config
-	 * @returns {Promise<string>} - Service worker URL with config
-	 */
-	async appendConfigToServiceWorkerURL(url, parameter_name = "config") {
-		let config = await this.fetchWebConfig();
-		const encode_config = encodeURIComponent(JSON.stringify(config));
-		return `${url}?${parameter_name}=${encode_config}`;
-	}
-
-	/**
 	 * Fetch web config of the project
 	 *
 	 * @returns {Promise<webConfigType>}

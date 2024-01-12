@@ -182,21 +182,32 @@
 		import FrappePushNotification from "./public/frappe-push-notification";
 
 		window.frappePushNotification = new FrappePushNotification("hrms");
+		FrappePushNotification.relayServerBaseURL = "http://notification.relay:8000"
 		document.addEventListener("DOMContentLoaded", () => {
-			window.frappePushNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
-				.then((url) => {
-					navigator.serviceWorker.register(url, {
+			window.frappePushNotification.fetchWebConfig()
+				.then((config) => {
+					navigator.serviceWorker.register("/assets/hrms/frontend/frappe-push-notification-sw.js", {
 						type: "module",
 					}).then((registration) => {
+						registration.addEventListener("updatefound", () => {
+							const newWorker = registration.installing;
+							newWorker.addEventListener("statechange", () => {
+								if (newWorker.state === "activated") {
+									registration.active.postMessage({
+										type: "INITIALIZE",
+										config: config,
+									})
+								}
+							});
+						})
+
 						window.frappePushNotification.initialize(registration).then(() => {
 							console.log("Frappe Notification Initialized");
 						});
 					})
-				})
-				.catch((err) => {
-					console.error(err);
-				});
+                })
 		});
+
 
     </script>
     <!-- END ! Import Frappe Notification JS -->
