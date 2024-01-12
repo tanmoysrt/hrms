@@ -137,7 +137,7 @@ class FrappePushNotification {
 	 * @returns {boolean}
 	 */
 	isNotificationEnabled() {
-		return localStorage.getItem('firebase_token') !== null;
+		return localStorage.getItem(`firebase_token_${this.projectName}`) !== null;
 	}
 
 	/**
@@ -166,7 +166,7 @@ class FrappePushNotification {
 			};
 		}
 		// check in local storage for old token
-		let oldToken = localStorage.getItem('firebase_token');
+		let oldToken = localStorage.getItem(`firebase_token_${this.projectName}`);
 		let newToken = await getToken(this.messaging, {
 			vapidKey: await this.fetchVapidPublicKey(),
 			serviceWorkerRegistration: this.serviceWorkerRegistration,
@@ -183,7 +183,7 @@ class FrappePushNotification {
 				throw new Error("Failed to subscribe to push notification");
 			}
 			// save token to local storage
-			localStorage.setItem('firebase_token', newToken);
+			localStorage.setItem(`firebase_token_${this.projectName}`, newToken);
 		}
 		this.token = newToken;
 		return {
@@ -201,7 +201,7 @@ class FrappePushNotification {
 	async disableNotification() {
 		if (this.token == null) {
 			// try to fetch token from local storage
-			this.token = localStorage.getItem('firebase_token');
+			this.token = localStorage.getItem(`firebase_token_${this.projectName}`);
 			if (this.token == null || this.token === "") {
 				return;
 			}
@@ -220,7 +220,7 @@ class FrappePushNotification {
 			console.error(e);
 		}
 		// remove token
-		localStorage.removeItem('firebase_token');
+		localStorage.removeItem(`firebase_token_${this.projectName}`);
 		this.token = null;
 	}
 
