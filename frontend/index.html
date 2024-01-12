@@ -183,7 +183,7 @@
 
 		window.frappePushNotification = new FrappePushNotification("hrms");
 		document.addEventListener("DOMContentLoaded", () => {
-			window.frappePushNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-notification-sw.js")
+			window.frappePushNotification.appendConfigToServiceWorkerURL("/assets/hrms/frontend/frappe-push-notification-sw.js")
 				.then((url) => {
 					navigator.serviceWorker.register(url, {
 						type: "module",
