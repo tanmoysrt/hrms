@@ -22,9 +22,9 @@ class PWANotification(Document):
 		)
 		try:
 			link = urlparse(frappe.utils.get_url()).hostname
-			push_notification = PushNotification()
+			push_notification = PushNotification("hrms")
 			if push_notification.is_enabled():
-				PushNotification().send_notification_to_user(
+				push_notification.send_notification_to_user(
 					self.to_user,
 					self.reference_document_type,
 					self.message,
