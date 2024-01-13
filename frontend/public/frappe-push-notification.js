@@ -232,7 +232,7 @@ class FrappePushNotification {
 	 */
 	async registerTokenHandler(token) {
 		try {
-			let response = await fetch("/api/method/frappe.push_notification.subscribe?fcm_token=" + token, {
+			let response = await fetch("/api/method/frappe.push_notification.subscribe?fcm_token=" + token + "&project_name=" + this.projectName, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ class FrappePushNotification {
 	 */
 	async unregisterTokenHandler(token) {
 		try {
-			let response = await fetch("/api/method/frappe.push_notification.unsubscribe?fcm_token=" + token, {
+			let response = await fetch("/api/method/frappe.push_notification.unsubscribe?fcm_token=" + token + "&project_name=" + this.projectName, {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
