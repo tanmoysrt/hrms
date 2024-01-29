@@ -12,6 +12,9 @@ onBackgroundMessage(messaging, (payload) => {
 	let notificationOptions = {
 		body: payload.data.body || ''
 	};
+	if(payload.data.notification_icon) {
+		notificationOptions['icon'] = payload.data.notification_icon;
+	}
 	if (isChrome()) {
 		notificationOptions['data'] = {
 			url: payload.data.click_action
